@@ -41,18 +41,24 @@ pub struct DNSName(String);
 #[cfg(feature = "std")]
 impl DNSName {
     /// Returns a `DNSNameRef` that refers to this `DNSName`.
-    pub fn as_ref(&self) -> DNSNameRef { DNSNameRef(self.0.as_bytes()) }
+    pub fn as_ref(&self) -> DNSNameRef {
+        DNSNameRef(self.0.as_bytes())
+    }
 }
 
 #[cfg(feature = "std")]
 impl AsRef<str> for DNSName {
-    fn as_ref(&self) -> &str { self.0.as_ref() }
+    fn as_ref(&self) -> &str {
+        self.0.as_ref()
+    }
 }
 
 // Deprecated
 #[cfg(feature = "std")]
 impl From<DNSNameRef<'_>> for DNSName {
-    fn from(dns_name: DNSNameRef) -> Self { dns_name.to_owned() }
+    fn from(dns_name: DNSNameRef) -> Self {
+        dns_name.to_owned()
+    }
 }
 
 /// A reference to a DNS Name suitable for use in the TLS Server Name Indication
@@ -77,7 +83,9 @@ pub struct DNSNameRef<'a>(&'a [u8]);
 pub struct InvalidDNSNameError;
 
 impl core::fmt::Display for InvalidDNSNameError {
-    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result { write!(f, "{:?}", self) }
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+        write!(f, "{:?}", self)
+    }
 }
 
 #[cfg(feature = "std")]
@@ -138,16 +146,17 @@ pub fn verify_cert_dns_name(
         Err(Error::CertNotValidForName),
         &|name| {
             match name {
-                GeneralName::DNSName(presented_id) =>
+                GeneralName::DNSName(presented_id) => {
                     match presented_dns_id_matches_reference_dns_id(presented_id, dns_name) {
                         Some(true) => {
                             return NameIteration::Stop(Ok(()));
-                        },
+                        }
                         Some(false) => (),
                         None => {
                             return NameIteration::Stop(Err(Error::BadDER));
-                        },
-                    },
+                        }
+                    }
+                }
                 _ => (),
             }
             NameIteration::KeepGoing
@@ -163,7 +172,7 @@ pub fn check_name_constraints(
         Some(input) => input,
         None => {
             return Ok(());
-        },
+        }
     };
 
     fn parse_subtrees<'b>(
@@ -200,7 +209,7 @@ pub fn check_name_constraints(
             EndEntityOrCA::CA(child_cert) => child_cert,
             EndEntityOrCA::EndEntity => {
                 break;
-            },
+            }
         };
     }
 
@@ -218,7 +227,7 @@ fn check_presented_id_conforms_to_constraints(
     ) {
         stop @ NameIteration::Stop(..) => {
             return stop;
-        },
+        }
         NameIteration::KeepGoing => (),
     };
 
@@ -242,7 +251,7 @@ fn check_presented_id_conforms_to_constraints_in_subtree(
         Some(constraints) => untrusted::Reader::new(constraints),
         None => {
             return NameIteration::KeepGoing;
-        },
+        }
     };
 
     let mut has_permitted_subtrees_match = false;
@@ -267,18 +276,21 @@ fn check_presented_id_conforms_to_constraints_in_subtree(
             Ok(base) => base,
             Err(err) => {
                 return NameIteration::Stop(Err(err));
-            },
+            }
         };
 
         let matches = match (name, base) {
-            (GeneralName::DNSName(name), GeneralName::DNSName(base)) =>
-                presented_dns_id_matches_dns_id_constraint(name, base).ok_or(Error::BadDER),
+            (GeneralName::DNSName(name), GeneralName::DNSName(base)) => {
+                presented_dns_id_matches_dns_id_constraint(name, base).ok_or(Error::BadDER)
+            }
 
-            (GeneralName::DirectoryName(name), GeneralName::DirectoryName(base)) =>
-                presented_directory_name_matches_constraint(name, base, subtrees),
+            (GeneralName::DirectoryName(name), GeneralName::DirectoryName(base)) => {
+                presented_directory_name_matches_constraint(name, base, subtrees)
+            }
 
-            (GeneralName::IPAddress(name), GeneralName::IPAddress(base)) =>
-                presented_ip_address_matches_constraint(name, base),
+            (GeneralName::IPAddress(name), GeneralName::IPAddress(base)) => {
+                presented_ip_address_matches_constraint(name, base)
+            }
 
             // RFC 4280 says "If a name constraints extension that is marked as
             // critical imposes constraints on a particular name form, and an
@@ -290,7 +302,9 @@ fn check_presented_id_conforms_to_constraints_in_subtree(
             // considering whether the name constraint it critical.
             (GeneralName::Unsupported(name_tag), GeneralName::Unsupported(base_tag))
                 if name_tag == base_tag =>
-                Err(Error::NameConstraintViolation),
+            {
+                Err(Error::NameConstraintViolation)
+            }
 
             _ => Ok(false),
         };
@@ -298,21 +312,21 @@ fn check_presented_id_conforms_to_constraints_in_subtree(
         match (subtrees, matches) {
             (Subtrees::PermittedSubtrees, Ok(true)) => {
                 has_permitted_subtrees_match = true;
-            },
+            }
 
             (Subtrees::PermittedSubtrees, Ok(false)) => {
                 has_permitted_subtrees_mismatch = true;
-            },
+            }
 
             (Subtrees::ExcludedSubtrees, Ok(true)) => {
                 return NameIteration::Stop(Err(Error::NameConstraintViolation));
-            },
+            }
 
             (Subtrees::ExcludedSubtrees, Ok(false)) => (),
 
             (_, Err(err)) => {
                 return NameIteration::Stop(Err(err));
-            },
+            }
         }
 
         if constraints.at_end() {
@@ -418,11 +432,11 @@ pub(crate) fn iterate_names(
                 match f(name) {
                     NameIteration::Stop(result) => {
                         return result;
-                    },
+                    }
                     NameIteration::KeepGoing => (),
                 }
             }
-        },
+        }
         None => (),
     }
     match subject {
@@ -686,7 +700,7 @@ fn presented_dns_id_matches_reference_dns_id_internal(
                     return Some(false);
                 }
             }
-        },
+        }
 
         IDRole::NameConstraint => (),
 
@@ -714,7 +728,7 @@ fn presented_dns_id_matches_reference_dns_id_internal(
             (Ok(p), Ok(r)) if ascii_lower(p) == ascii_lower(r) => p,
             _ => {
                 return Some(false);
-            },
+            }
         };
 
         if presented.at_end() {
@@ -734,7 +748,7 @@ fn presented_dns_id_matches_reference_dns_id_internal(
                 Ok(b'.') => (),
                 _ => {
                     return Some(false);
-                },
+                }
             };
         }
         if !reference.at_end() {
@@ -798,9 +812,11 @@ fn is_valid_dns_id(
     }
 
     let mut dot_count = 0;
+    let mut colon_count = 0;
     let mut label_length = 0;
     let mut label_is_all_numeric = false;
     let mut label_ends_with_hyphen = false;
+    let mut all_label_is_numeric = true;
 
     // Only presented IDs are allowed to have wildcard labels. And, like
     // Chromium, be stricter than RFC 6125 requires by insisting that a
@@ -822,13 +838,14 @@ fn is_valid_dns_id(
                 if label_length == 0 {
                     return false; // Labels must not start with a hyphen.
                 }
+                all_label_is_numeric = false;
                 label_is_all_numeric = false;
                 label_ends_with_hyphen = true;
                 label_length += 1;
                 if label_length > MAX_LABEL_LENGTH {
                     return false;
                 }
-            },
+            }
 
             Ok(b'0'..=b'9') => {
                 if label_length == 0 {
@@ -839,16 +856,17 @@ fn is_valid_dns_id(
                 if label_length > MAX_LABEL_LENGTH {
                     return false;
                 }
-            },
+            }
 
             Ok(b'a'..=b'z') | Ok(b'A'..=b'Z') | Ok(b'_') => {
+                all_label_is_numeric = false;
                 label_is_all_numeric = false;
                 label_ends_with_hyphen = false;
                 label_length += 1;
                 if label_length > MAX_LABEL_LENGTH {
                     return false;
                 }
-            },
+            }
 
             Ok(b'.') => {
                 dot_count += 1;
@@ -859,11 +877,19 @@ fn is_valid_dns_id(
                     return false; // Labels must not end with a hyphen.
                 }
                 label_length = 0;
-            },
+            }
+
+            Ok(b':') => {
+                colon_count += 1;
+                if label_ends_with_hyphen {
+                    return false; // Labels must not end with a hyphen.
+                }
+                label_length = 1;
+            }
 
             _ => {
                 return false;
-            },
+            }
         }
         is_first_byte = false;
 
@@ -883,7 +909,15 @@ fn is_valid_dns_id(
     }
 
     if label_is_all_numeric {
-        return false; // Last label must not be all numeric.
+        if colon_count == 0 {
+            if dot_count != 3 || !all_label_is_numeric || label_length == 0 {
+                return false;
+            }
+        }
+    }
+
+    if colon_count > 0 && label_length == 1 {
+        return false;
     }
 
     if is_wildcard {

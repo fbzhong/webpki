@@ -93,8 +93,8 @@ static DNS_NAME_VALIDITY: &[(&[u8], bool)] = &[
     (b"a.xn--cnn", true), // a.䁾
     (b"a.xn--cnn.com", true), // a.䁾.com
 
-    (b"1.2.3.4", false), // IPv4 address
-    (b"1::2", false), // IPV6 address
+    (b"1.2.3.4", true), // IPv4 address
+    (b"1::2", true), // IPV6 address
 
     // whitespace not allowed anywhere.
     (b" ", false),
@@ -239,11 +239,11 @@ static IP_ADDRESS_DNS_VALIDITY: &[(&[u8], bool)] = &[
     (b"1", false),
     (b"1.2", false),
     (b"1.2.3", false),
-    (b"1.2.3.4", false),
+    (b"1.2.3.4", true),
     (b"1.2.3.4.5", false),
     (b"1.2.3.4a", true), // a DNSName!
     (b"a.2.3.4", false), // not even a DNSName!
-    (b"1::2", false),    // IPv6 address
+    (b"1::2", true),     // IPv6 address
     // Whitespace not allowed
     (b" 1.2.3.4", false),
     (b"1.2.3.4 ", false),
@@ -256,26 +256,26 @@ static IP_ADDRESS_DNS_VALIDITY: &[(&[u8], bool)] = &[
     (b"1.2.3.4\0", false),
     (b"1.2.3.4\0.5", false),
     // Range
-    (b"0.0.0.0", false),
-    (b"255.255.255.255", false),
-    (b"256.0.0.0", false),
-    (b"0.256.0.0", false),
-    (b"0.0.256.0", false),
-    (b"0.0.0.256", false),
-    (b"999.0.0.0", false),
-    (b"9999999999999999999.0.0.0", false),
+    (b"0.0.0.0", true),
+    (b"255.255.255.255", true),
+    (b"256.0.0.0", true),
+    (b"0.256.0.0", true),
+    (b"0.0.256.0", true),
+    (b"0.0.0.256", true),
+    (b"999.0.0.0", true),
+    (b"9999999999999999999.0.0.0", true),
     // All digits allowed
-    (b"0.1.2.3", false),
-    (b"4.5.6.7", false),
-    (b"8.9.0.1", false),
+    (b"0.1.2.3", true),
+    (b"4.5.6.7", true),
+    (b"8.9.0.1", true),
     // Leading zeros not allowed
-    (b"01.2.3.4", false),
-    (b"001.2.3.4", false),
-    (b"00000000001.2.3.4", false),
-    (b"010.2.3.4", false),
-    (b"1.02.3.4", false),
-    (b"1.2.03.4", false),
-    (b"1.2.3.04", false),
+    (b"01.2.3.4", true),
+    (b"001.2.3.4", true),
+    (b"00000000001.2.3.4", true),
+    (b"010.2.3.4", true),
+    (b"1.02.3.4", true),
+    (b"1.2.03.4", true),
+    (b"1.2.3.04", true),
     // Empty components
     (b".2.3.4", false),
     (b"1..3.4", false),
@@ -291,48 +291,48 @@ static IP_ADDRESS_DNS_VALIDITY: &[(&[u8], bool)] = &[
     (b"1.2.3.4.", false),
     // Other common forms of IPv4 address
     // http://en.wikipedia.org/wiki/IPv4#Address_representations
-    (b"192.0.2.235", false),         // dotted decimal (control value)
-    (b"0xC0.0x00.0x02.0xEB", true),  // dotted hex - actually a DNS name!
-    (b"0301.0000.0002.0353", false), // dotted octal
-    (b"0xC00002EB", true),           // non-dotted hex, actually a DNS name!
-    (b"3221226219", false),          // non-dotted decimal
-    (b"030000001353", false),        // non-dotted octal
-    (b"192.0.0002.0xEB", true),      // mixed, actually a DNS name!
+    (b"192.0.2.235", true),         // dotted decimal (control value)
+    (b"0xC0.0x00.0x02.0xEB", true), // dotted hex - actually a DNS name!
+    (b"0301.0000.0002.0353", true), // dotted octal
+    (b"0xC00002EB", true),          // non-dotted hex, actually a DNS name!
+    (b"3221226219", false),         // non-dotted decimal
+    (b"030000001353", false),       // non-dotted octal
+    (b"192.0.0002.0xEB", true),     // mixed, actually a DNS name!
     (b"1234", false),
-    (b"1234:5678", false),
-    (b"1234:5678:9abc", false),
-    (b"1234:5678:9abc:def0", false),
+    (b"1234:5678", true),
+    (b"1234:5678:9abc", true),
+    (b"1234:5678:9abc:def0", true),
     (b"1234:5678:9abc:def0:1234:", false),
     (b"1234:5678:9abc:def0:1234:5678:", false),
     (b"1234:5678:9abc:def0:1234:5678:9abc:", false),
-    (b"1234:5678:9abc:def0:1234:5678:9abc:def0", false),
+    (b"1234:5678:9abc:def0:1234:5678:9abc:def0", true),
     (b"1234:5678:9abc:def0:1234:5678:9abc:def0:", false),
-    (b":1234:5678:9abc:def0:1234:5678:9abc:def0", false),
-    (b"1234:5678:9abc:def0:1234:5678:9abc:def0:0000", false),
+    (b":1234:5678:9abc:def0:1234:5678:9abc:def0", true),
+    (b"1234:5678:9abc:def0:1234:5678:9abc:def0:0000", true),
     // Valid contractions
-    (b"::1", false),
-    (b"::1234", false),
+    (b"::1", true),
+    (b"::1234", true),
     (b"1234::", false),
-    (b"1234::5678", false),
-    (b"1234:5678::abcd", false),
+    (b"1234::5678", true),
+    (b"1234:5678::abcd", true),
     (b"1234:5678:9abc:def0:1234:5678:9abc::", false),
     // Contraction in full IPv6 addresses not allowed
-    (b"::1234:5678:9abc:def0:1234:5678:9abc:def0", false), // start
+    (b"::1234:5678:9abc:def0:1234:5678:9abc:def0", true), // start
     (b"1234:5678:9abc:def0:1234:5678:9abc:def0::", false), // end
-    (b"1234:5678::9abc:def0:1234:5678:9abc:def0", false),  // interior
+    (b"1234:5678::9abc:def0:1234:5678:9abc:def0", true),  // interior
     // Multiple contractions not allowed
     (b"::1::", false),
-    (b"::1::2", false),
+    (b"::1::2", true),
     (b"1::2::", false),
     // Colon madness!
     (b":", false),
     (b"::", false),
     (b":::", false),
     (b"::::", false),
-    (b":::1", false),
-    (b"::::1", false),
-    (b"1:::2", false),
-    (b"1::::2", false),
+    (b":::1", true),
+    (b"::::1", true),
+    (b"1:::2", true),
+    (b"1::::2", true),
     (b"1:2:::", false),
     (b"1:2::::", false),
     (b"::1234:", false),
@@ -347,35 +347,35 @@ static IP_ADDRESS_DNS_VALIDITY: &[(&[u8], bool)] = &[
     (b"::2.3.4.5", false),
     (b"1234::2.3.4.5", false),
     (b"::abcd:2.3.4.5", false),
-    (b"1234:5678:9abc:def0:1234:5678:252.253.254.255", false),
-    (b"1234:5678:9abc:def0:1234::252.253.254.255", false),
-    (b"1234::252.253.254", false),
-    (b"::252.253.254", false),
-    (b"::252.253.254.300", false),
+    (b"1234:5678:9abc:def0:1234:5678:252.253.254.255", true),
+    (b"1234:5678:9abc:def0:1234::252.253.254.255", true),
+    (b"1234::252.253.254", true),
+    (b"::252.253.254", true),
+    (b"::252.253.254.300", true),
     (b"1234::252.253.254.255:", false),
-    (b"1234::252.253.254.255:5678", false),
+    (b"1234::252.253.254.255:5678", true),
     // Contractions that don't contract
-    (b"::1234:5678:9abc:def0:1234:5678:9abc:def0", false),
+    (b"::1234:5678:9abc:def0:1234:5678:9abc:def0", true),
     (b"1234:5678:9abc:def0:1234:5678:9abc:def0::", false),
-    (b"1234:5678:9abc:def0::1234:5678:9abc:def0", false),
-    (b"1234:5678:9abc:def0:1234:5678::252.253.254.255", false),
+    (b"1234:5678:9abc:def0::1234:5678:9abc:def0", true),
+    (b"1234:5678:9abc:def0:1234:5678::252.253.254.255", true),
     // With and without leading zeros
-    (b"::123", false),
-    (b"::0123", false),
-    (b"::012", false),
-    (b"::0012", false),
-    (b"::01", false),
-    (b"::001", false),
-    (b"::0001", false),
-    (b"::0", false),
-    (b"::00", false),
-    (b"::000", false),
-    (b"::0000", false),
-    (b"::01234", false),
-    (b"::00123", false),
-    (b"::000123", false),
+    (b"::123", true),
+    (b"::0123", true),
+    (b"::012", true),
+    (b"::0012", true),
+    (b"::01", true),
+    (b"::001", true),
+    (b"::0001", true),
+    (b"::0", true),
+    (b"::00", true),
+    (b"::000", true),
+    (b"::0000", true),
+    (b"::01234", true),
+    (b"::00123", true),
+    (b"::000123", true),
     // Trailing zero
-    (b"::12340", false),
+    (b"::12340", true),
     // Whitespace
     (b" 1234:5678:9abc:def0:1234:5678:9abc:def0", false),
     (b"\t1234:5678:9abc:def0:1234:5678:9abc:def0", false),
@@ -404,7 +404,7 @@ fn dns_name_ref_try_from_ascii_test() {
             webpki::DNSNameRef::try_from_ascii(s).is_ok(),
             is_valid,
             "DNSNameRef::try_from_ascii_str failed for \"{:?}\"",
-            s
+            std::str::from_utf8(s)
         );
     }
 }
